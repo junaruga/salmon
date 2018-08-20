@@ -31,6 +31,7 @@ script:
     # Set make -j N considering Travis providing 2 cores.
     # VERBOSE=1 to show the input commands in generatd Makefile for debug.
     - |
+      travis_wait 20 \
       cmake \
         -DFETCH_BOOST=TRUE \
         -DNO_RTM=TRUE \
