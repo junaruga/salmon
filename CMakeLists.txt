@@ -1,4 +1,6 @@
 cmake_minimum_required (VERSION 3.9)
+find_program(CMAKE_C_COMPILER NAMES $ENV{CC} gcc PATHS ENV PATH NO_DEFAULT_PATH})
+find_program(CMAKE_CXX_COMPILER NAMES $ENV{CXX} g++ PATHS ENV PATH NO_DEFAULT_PATH})
 
 enable_testing()
 
@@ -167,8 +169,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
     endif()
 
     set (WARNING_IGNORE_FLAGS "${WARNING_IGNORE_FLAGS} -Wno-unused-local-typedefs")
-    set (BOOST_TOOLSET "gcc")
-    set (BOOST_CONFIGURE_TOOLSET "--with-toolset=gcc")
+    set (BOOST_TOOLSET ${CMAKE_C_COMPILER})
+    set (BOOST_CONFIGURE_TOOLSET "")
     set (BCXX_FLAGS "${CXXSTDFLAG}")
     set (BOOST_EXTRA_FLAGS toolset=gcc cxxflags=${BCXX_FLAGS})
 # Tentatively, we support clang now
@@ -409,8 +411,12 @@ elseif(FETCH_BOOST)
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/boost_1_66_0
         INSTALL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/install
         #PATCH_COMMAND patch -p2 < ${CMAKE_CURRENT_SOURCE_DIR}/external/boost156.patch
-	CONFIGURE_COMMAND CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} ${CMAKE_CURRENT_SOURCE_DIR}/external/boost_1_66_0/bootstrap.sh ${BOOST_CONFIGURE_TOOLSET} ${BOOST_BUILD_LIBS} --prefix=<INSTALL_DIR>
-	BUILD_COMMAND CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} ${CMAKE_CURRENT_SOURCE_DIR}/external/boost_1_66_0/b2 -d0 -j2 ${BOOST_LIB_SUBSET} toolset=${BOOST_TOOLSET} ${BOOST_EXTRA_FLAGS} cxxflags=${BOOST_CXX_FLAGS} link=static install
+        CONFIGURE_COMMAND if [[ $ENV{CC} =~ gcc- ]]; then
+                              NUM=$(echo "$ENV{CC}" | sed 's/gcc-//')
+                              echo "using gcc : $ENV{NUM} : ${CMAKE_CXX_COMPILER} ; " >> tools/build/src/user-config.jam
+                          fi
+                          CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} ${CMAKE_CURRENT_SOURCE_DIR}/external/boost_1_66_0/bootstrap.sh ${BOOST_CONFIGURE_TOOLSET} ${BOOST_BUILD_LIBS} --prefix=<INSTALL_DIR>
+        BUILD_COMMAND CC=${CMAKE_C_COMPILER} CXX=${CMAKE_CXX_COMPILER} ${CMAKE_CURRENT_SOURCE_DIR}/external/boost_1_66_0/b2 -d0 -j2 ${BOOST_LIB_SUBSET} toolset=${BOOST_TOOLSET} ${BOOST_EXTRA_FLAGS} cxxflags=${BOOST_CXX_FLAGS} link=static install
         BUILD_IN_SOURCE 1
         INSTALL_COMMAND ""
     )
