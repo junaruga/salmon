@@ -28,10 +28,11 @@ script:
     - LD_LIBRARY_PATH=${TRAVIS_BUILD_DIR}/lib:$LD_LIBRARY_PATH
     - mkdir build
     - pushd build
+    # travis_wait: because make test "Start 1: unit_tests" takes long time
+    # without output.
     # Set make -j N considering Travis providing 2 cores.
     # VERBOSE=1 to show the input commands in generatd Makefile for debug.
     - |
-      travis_wait 20 \
       cmake \
         -DFETCH_BOOST=TRUE \
         -DNO_RTM=TRUE \
@@ -39,7 +40,7 @@ script:
       make -j 4 VERBOSE=1 && \
       make install && \
       ./src/salmon -h && \
-      make test VERBOSE=1
+      travis_wait 30 make test VERBOSE=1
     - popd
 
 after_success:
