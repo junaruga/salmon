@@ -9,10 +9,11 @@ matrix:
     - env: CC=gcc-5 CXX=g++-5 AR=gcc-ar-5 NM=gcc-nm-5 RANLIB=gcc-ranlib-5
     - language: python
       python: "3.6"
+      name: Lint cmake files.
       install: pip3 install cmakelint
       script: scripts/lint.sh
   allow_failures:
-    - language: python
+    - name: Lint cmake files.
   fast_finish: true
 
 install:
